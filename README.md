@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey.svg)
 ![Requires](https://img.shields.io/badge/requires-ImageMagick-orange.svg)
-![Version](https://img.shields.io/badge/version-0.1.0-green.svg)
+![Version](https://img.shields.io/badge/version-0.1.1-green.svg)
 
 Drop an image into chat, say *"convert this to CMYK for print,"* and get back a file your
 print vendor can actually use — converted through a real ICC color profile, with that profile

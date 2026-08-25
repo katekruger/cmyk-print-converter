@@ -135,8 +135,16 @@ convert_one() {
   local q_args=()
   if [ "$lower" = "jpg" ] || [ "$lower" = "jpeg" ]; then q_args=(-quality "$QUALITY"); fi
 
+  # Output inherits the source bit depth. A 1-bit source (line art, bilevel scan)
+  # would write CMYK at 1 bit per channel and crush the color — so raise sub-8-bit
+  # sources to 8. Never lower a genuine 16-bit source; print work depends on it.
+  local depth_args=() in_depth
+  in_depth="$("$IM" identify -format '%[depth]' "$in" 2>/dev/null || echo 8)"
+  case "$in_depth" in ''|*[!0-9]*) in_depth=8;; esac
+  [ "$in_depth" -lt 8 ] && depth_args=(-depth 8)
+
   # bash 3.2-safe expansion of possibly-empty arrays under `set -u`
-  if "$IM" "$in" ${src_args[@]+"${src_args[@]}"} -profile "$CMYK_PROFILE" ${q_args[@]+"${q_args[@]}"} "$outfile" 2>/dev/null; then
+  if "$IM" "$in" ${src_args[@]+"${src_args[@]}"} -profile "$CMYK_PROFILE" ${depth_args[@]+"${depth_args[@]}"} ${q_args[@]+"${q_args[@]}"} "$outfile" 2>/dev/null; then
     echo "  OK   $base  ->  $(basename "$outfile")"
     CONVERTED=$((CONVERTED+1))
   else
