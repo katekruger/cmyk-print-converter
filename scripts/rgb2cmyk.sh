@@ -25,14 +25,6 @@
 # ------------------------------------------------------------
 set -euo pipefail
 
-# ---- locate the ImageMagick binary ----
-if command -v magick >/dev/null 2>&1; then IM=magick
-elif command -v convert >/dev/null 2>&1; then IM=convert
-else
-  echo "ERROR: ImageMagick not found. Install with:  brew install imagemagick" >&2
-  exit 1
-fi
-
 # ---- defaults ----
 OUT="./cmyk-out"
 QUALITY=92
@@ -72,7 +64,7 @@ while [ $# -gt 0 ]; do
     -p|--profile)  CMYK_PROFILE="$2"; shift 2;;
     -q|--quality)  QUALITY="$2"; shift 2;;
     -r|--recursive) RECURSIVE=1; shift;;
-    -h|--help)     sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'; exit 0;;
+    -h|--help)     sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//'; exit 0;;
     -*)            echo "Unknown option: $1" >&2; exit 1;;
     *)             INPUTS+=("$1"); shift;;
   esac
@@ -82,6 +74,15 @@ if [ ${#INPUTS[@]} -eq 0 ]; then
   echo "Usage: $0 <file-or-folder> [...] [-o OUT] [-p PROFILE.icc] [-q QUALITY] [-r]" >&2
   exit 1
 fi
+
+# ---- locate the ImageMagick binary ----
+if command -v magick >/dev/null 2>&1; then IM=magick
+elif command -v convert >/dev/null 2>&1; then IM=convert
+else
+  echo "ERROR: ImageMagick not found. Install with:  brew install imagemagick" >&2
+  exit 1
+fi
+
 if [ ! -f "$CMYK_PROFILE" ]; then
   echo "ERROR: CMYK profile not found: $CMYK_PROFILE" >&2
   exit 1
