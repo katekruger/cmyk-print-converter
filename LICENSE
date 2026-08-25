@@ -19,13 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-NOTE ON ICC COLOR PROFILES
-
-This license covers the plugin's own source code only. It does NOT cover any
-ICC color profile you install alongside it. Adobe's US Web Coated (SWOP)
-profile is licensed separately by Adobe and is deliberately NOT bundled with
-this plugin — see skills/convert-to-cmyk/references/swop-profile.md for how to
-obtain and install it yourself.
