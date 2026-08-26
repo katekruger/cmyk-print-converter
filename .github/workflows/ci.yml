@@ -65,16 +65,52 @@ jobs:
         run: bash scripts/build-plugin.sh --check
 
   test:
-    name: Tests
-    runs-on: ubuntu-latest
+    # macOS, not ubuntu: the converter resolves its fallback CMYK and sRGB profiles
+    # from /System/Library/ColorSync, so on Linux it exits before converting anything.
+    # That is the documented supported platform, and the suite must run where the
+    # plugin actually runs.
+    name: Tests (macOS)
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v5
 
       - name: Install ImageMagick
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick
+        run: brew install imagemagick
+
+      - name: Confirm the ColorSync fallback profiles exist
+        run: |
+          test -f "/System/Library/ColorSync/Profiles/Generic CMYK Profile.icc"
+          test -f "/System/Library/ColorSync/Profiles/sRGB Profile.icc"
+          echo "  both fallback profiles present"
 
       - name: Run the suite
         run: bash tests/run-tests.sh
+
+  test-linux-degrades:
+    # The plugin is macOS-only, but it must FAIL CLEANLY elsewhere rather than
+    # producing wrong output. This pins that contract.
+    name: Linux degrades cleanly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install ImageMagick
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick
+      - name: Missing profile produces an actionable error, not bad output
+        run: |
+          set +e
+          out=$(bash scripts/rgb2cmyk.sh README.md -o /tmp/out 2>&1); code=$?
+          set -e
+          echo "$out"
+          echo "exit=$code"
+          echo "$out" | grep -q "CMYK profile not found" \
+            || { echo "expected a 'CMYK profile not found' error"; exit 1; }
+          [ "$code" -eq 1 ] || { echo "expected exit 1, got $code"; exit 1; }
+          echo "  fails cleanly with a named profile path"
+
+      - name: --help works with no profile and no ImageMagick assumptions
+        run: |
+          bash scripts/rgb2cmyk.sh --help | head -3
+          bash scripts/rgb2cmyk.sh --help | grep -q 'set -euo' && exit 1 || true
 
   bundle:
     name: Bundle freshness
