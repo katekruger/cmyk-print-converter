@@ -16,24 +16,32 @@ ok(){ printf "  \033[32mPASS\033[0m %s\n" "$1"; PASS=$((PASS+1)); }
 no(){ printf "  \033[31mFAIL\033[0m %s\n     expected: %s\n     actual:   %s\n" "$1" "$2" "$3"; FAIL=$((FAIL+1)); }
 eq(){ [ "$2" = "$3" ] && ok "$1" || no "$1" "$3" "$2"; }
 
-if ! command -v magick >/dev/null 2>&1; then
-  echo "ERROR: ImageMagick required to run these tests (brew install imagemagick)" >&2
+# Resolve ImageMagick the same way the script under test does: v7 ships `magick`,
+# v6 ships `convert`/`identify`. The script advertises support for both, so the
+# tests must run under both — Ubuntu's imagemagick package is still v6.
+if command -v magick >/dev/null 2>&1; then
+  IM="magick"; IMID="magick identify"
+elif command -v convert >/dev/null 2>&1 && command -v identify >/dev/null 2>&1; then
+  IM="convert"; IMID="identify"
+else
+  echo "ERROR: ImageMagick required (brew install imagemagick / apt-get install imagemagick)" >&2
   exit 1
 fi
+echo "  using: $IM ($($IMID -version 2>/dev/null | head -1))"
 
 echo "== fixtures =="
 IN="$WORK/in"; mkdir -p "$IN/nested"
-magick -size 120x90 gradient:red-blue -colorspace sRGB "$IN/photo.jpg"
-magick -size 60x40 xc:'srgb(0,255,64)' -depth 8 PNG24:"$IN/logo.png"
-magick -size 50x50 plasma:fractal -colorspace sRGB "$IN/art.tif"
-magick -size 40x40 xc:cyan -colorspace sRGB "$IN/icon.bmp"
-magick -size 40x30 xc:magenta -colorspace sRGB "$IN/frame.gif"
-magick -size 40x40 xc:'srgb(0,255,64)' "$IN/onebit.png"          # depth 1 on purpose
-magick -size 40x40 xc:'srgb(0,255,64)' -depth 16 "$IN/deep.tif"  # 16-bit on purpose
+$IM -size 120x90 gradient:red-blue -colorspace sRGB "$IN/photo.jpg"
+$IM -size 60x40 xc:'srgb(0,255,64)' -depth 8 PNG24:"$IN/logo.png"
+$IM -size 50x50 plasma:fractal -colorspace sRGB "$IN/art.tif"
+$IM -size 40x40 xc:cyan -colorspace sRGB "$IN/icon.bmp"
+$IM -size 40x30 xc:magenta -colorspace sRGB "$IN/frame.gif"
+$IM -size 40x40 xc:'srgb(0,255,64)' "$IN/onebit.png"          # depth 1 on purpose
+$IM -size 40x40 xc:'srgb(0,255,64)' -depth 16 "$IN/deep.tif"  # 16-bit on purpose
 printf '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8"/></svg>' > "$IN/vec.svg"
 echo "raw-ish" > "$IN/shot.cr2"
 echo "notes"   > "$IN/readme.txt"
-magick -size 30x30 xc:orange -colorspace sRGB "$IN/nested/subdir-only.png"
+$IM -size 30x30 xc:orange -colorspace sRGB "$IN/nested/subdir-only.png"
 echo "  generated $(ls "$IN" | wc -l | tr -d ' ') fixtures"
 
 echo
@@ -61,16 +69,16 @@ echo
 echo "== every output is real CMYK with an embedded profile =="
 for f in "$OUT"/*; do
   b=$(basename "$f")
-  eq "$b colorspace" "$(magick "$f" -format '%[colorspace]' info:)" "CMYK"
-  eq "$b has ICC"    "$([ -n "$(magick "$f" -format '%[profile:icc]' info: 2>/dev/null)" ] && echo y || echo n)" "y"
+  eq "$b colorspace" "$($IM "$f" -format '%[colorspace]' info:)" "CMYK"
+  eq "$b has ICC"    "$([ -n "$($IM "$f" -format '%[profile:icc]' info: 2>/dev/null)" ] && echo y || echo n)" "y"
 done
 
 echo
 echo "== bit-depth guard (regression: v0.1.0 crushed sub-8-bit color) =="
-eq "1-bit source raised to 8" "$(magick "$OUT/onebit.tif" -format '%[depth]' info:)" "8"
-px=$(magick "$OUT/onebit.tif" -format '%[pixel:p{5,5}]' info:)
+eq "1-bit source raised to 8" "$($IM "$OUT/onebit.tif" -format '%[depth]' info:)" "8"
+px=$($IM "$OUT/onebit.tif" -format '%[pixel:p{5,5}]' info:)
 eq "1-bit green not crushed to yellow" "$([ "$px" = "cmyk(0,0,255,0)" ] && echo crushed || echo ok)" "ok"
-eq "16-bit source preserved" "$(magick "$OUT/deep.tif" -format '%[depth]' info:)" "16"
+eq "16-bit source preserved" "$($IM "$OUT/deep.tif" -format '%[depth]' info:)" "16"
 
 echo
 echo "== flags =="
