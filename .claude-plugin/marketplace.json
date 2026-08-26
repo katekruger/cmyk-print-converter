@@ -1,0 +1,31 @@
+{
+  "name": "rgbtocmykplugin",
+  "owner": {
+    "name": "Kate Kruger",
+    "url": "https://github.com/katekruger"
+  },
+  "description": "Kate Kruger's print and color-management plugins for Claude Code.",
+  "plugins": [
+    {
+      "name": "cmyk-print-converter",
+      "displayName": "CMYK Print Converter",
+      "description": "Converts RGB images to print-ready CMYK through a real ICC color profile, embedding the profile so print vendors read colors correctly.",
+      "version": "0.1.1",
+      "source": "./",
+      "author": {
+        "name": "Kate Kruger",
+        "url": "https://github.com/katekruger"
+      },
+      "homepage": "https://github.com/katekruger/rgbtocmykplugin",
+      "license": "MIT",
+      "keywords": [
+        "cmyk",
+        "rgb",
+        "print",
+        "color-profile",
+        "icc",
+        "prepress"
+      ]
+    }
+  ]
+}

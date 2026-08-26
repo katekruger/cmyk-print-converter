@@ -1,9 +1,14 @@
 {
   "name": "cmyk-print-converter",
+  "displayName": "CMYK Print Converter",
   "version": "0.1.1",
-  "description": "Convert uploaded images from RGB to print-ready CMYK using a real ICC color profile (default: US Web Coated SWOP). Triggers when you upload an asset and ask to prepare it for print.",
+  "description": "Converts RGB images to print-ready CMYK through a real ICC color profile, embedding the profile so print vendors read colors correctly.",
   "author": {
-    "name": "Kate Kruger"
+    "name": "Kate Kruger",
+    "url": "https://github.com/katekruger"
   },
-  "keywords": ["cmyk", "rgb", "print", "color-profile", "icc", "prepress"]
+  "homepage": "https://github.com/katekruger/rgbtocmykplugin",
+  "repository": "https://github.com/katekruger/rgbtocmykplugin",
+  "license": "MIT",
+  "keywords": ["cmyk", "rgb", "print", "color-profile", "icc", "prepress", "imagemagick", "claude-plugin"]
 }
