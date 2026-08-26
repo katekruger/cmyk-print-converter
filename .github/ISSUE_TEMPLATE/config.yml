@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/katekruger/rgbtocmykplugin/security/advisories/new
+    about: Report privately. Please do not open a public issue for a security problem.
+  - name: Installing the SWOP ICC profile
+    url: https://github.com/katekruger/rgbtocmykplugin/blob/main/skills/convert-to-cmyk/references/swop-profile.md
+    about: "Seeing the 'Using the GENERIC CMYK profile' warning? Start here."
