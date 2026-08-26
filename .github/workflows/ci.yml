@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Manifests and shell syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Every JSON file parses
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sys
+          bad = 0
+          for f in pathlib.Path('.').rglob('*.json'):
+              if '.git' in f.parts or 'dist' in f.parts:
+                  continue
+              try:
+                  json.loads(f.read_text())
+                  print(f"  ok   {f}")
+              except Exception as e:
+                  print(f"  FAIL {f}: {e}"); bad += 1
+          sys.exit(1 if bad else 0)
+          PY
+
+      - name: Validate plugin and marketplace manifests
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude plugin validate . --strict
+          claude plugin validate .claude-plugin/marketplace.json --strict
+
+      - name: Shell syntax
+        run: |
+          for f in scripts/*.sh tests/*.sh; do
+            echo "  bash -n $f"; bash -n "$f"
+          done
+
+      - name: Shell lint
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          shellcheck -S warning scripts/*.sh tests/*.sh
+
+      - name: Executable bits are set
+        run: |
+          fail=0
+          for f in scripts/rgb2cmyk.sh scripts/build-plugin.sh tests/run-tests.sh; do
+            mode=$(git ls-files -s "$f" | awk '{print $1}')
+            [ "$mode" = "100755" ] && echo "  ok   $f ($mode)" || { echo "  FAIL $f is $mode, expected 100755"; fail=1; }
+          done
+          exit $fail
+
+      - name: Versions agree across all declared files
+        run: bash scripts/check-versions.sh
+
+      - name: Committed bundle matches source
+        run: bash scripts/build-plugin.sh --check
+
+  test:
+    # macOS, not ubuntu: the converter resolves its fallback CMYK and sRGB profiles
+    # from /System/Library/ColorSync, so on Linux it exits before converting anything.
+    # That is the documented supported platform, and the suite must run where the
+    # plugin actually runs.
+    name: Tests (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install ImageMagick
+        run: brew install imagemagick
+
+      - name: Confirm the ColorSync fallback profiles exist
+        run: |
+          test -f "/System/Library/ColorSync/Profiles/Generic CMYK Profile.icc"
+          test -f "/System/Library/ColorSync/Profiles/sRGB Profile.icc"
+          echo "  both fallback profiles present"
+
+      - name: Run the suite
+        run: bash tests/run-tests.sh
+
+  test-linux-degrades:
+    # The plugin is macOS-only, but it must FAIL CLEANLY elsewhere rather than
+    # producing wrong output. This pins that contract.
+    name: Linux degrades cleanly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install ImageMagick
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick
+      - name: Missing profile produces an actionable error, not bad output
+        run: |
+          set +e
+          out=$(bash scripts/rgb2cmyk.sh README.md -o /tmp/out 2>&1); code=$?
+          set -e
+          echo "$out"
+          echo "exit=$code"
+          echo "$out" | grep -q "CMYK profile not found" \
+            || { echo "expected a 'CMYK profile not found' error"; exit 1; }
+          [ "$code" -eq 1 ] || { echo "expected exit 1, got $code"; exit 1; }
+          echo "  fails cleanly with a named profile path"
+
+      - name: --help works with no profile and no ImageMagick assumptions
+        run: |
+          bash scripts/rgb2cmyk.sh --help | head -3
+          bash scripts/rgb2cmyk.sh --help | grep -q 'set -euo' && exit 1 || true
+
+  bundle:
+    name: Bundle freshness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Rebuild from source and diff against the committed bundle
+        run: bash scripts/build-plugin.sh --check
+      - name: The committed bundle installs
+        run: |
+          unzip -qo cmyk-print-converter.plugin -d /tmp/bundle
+          test -f /tmp/bundle/.claude-plugin/plugin.json
+          test -f /tmp/bundle/skills/convert-to-cmyk/SKILL.md
+          test -x /tmp/bundle/scripts/rgb2cmyk.sh
+          echo "bundle contents verified"
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

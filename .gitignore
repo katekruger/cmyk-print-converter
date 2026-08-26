@@ -1,3 +1,18 @@
+# Build output. The bundle at the repo root IS committed on purpose (the README
+# ships it as an install path); CI rebuilds it and fails if it drifts from source.
+# Only the scratch build directory is ignored.
+dist/
+
+# Python / tooling caches
+__pycache__/
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets
+.env
+
 # macOS
 .DS_Store
 ._*

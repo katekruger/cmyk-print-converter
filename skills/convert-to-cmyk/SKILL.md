@@ -1,57 +1,47 @@
 ---
 name: convert-to-cmyk
-description: Convert uploaded images from RGB to print-ready CMYK with an embedded ICC color profile (default US Web Coated SWOP). Triggers when the user uploads or points to an image (JPEG, PNG, TIFF, etc.) and asks to "convert to CMYK", "prepare for print", "make this print-ready", "change the color profile for print", "convert color mode", or "get this ready for the printer".
+description: Use when the user has one or more raster images and wants them prepared for print — "convert to CMYK", "make this print-ready", "prepare for print", "change the color profile for the printer", "convert color mode", "get this ready for the printer" — or uploads an image and asks whether it can go to a print vendor. Also use when the user asks which color profile a printer needs, or why print colors look duller than screen colors.
 ---
 
-# Convert to CMYK for Print
+# Convert to CMYK for print
 
 Convert RGB raster images to print-ready CMYK using a real ICC profile, embedding the
 profile so the print vendor reads colors correctly. Default profile: **US Web Coated (SWOP)**.
 
-## When to run
-
-Trigger when the user supplies one or more images (uploaded, dragged in, or by path) and
-wants them prepared for print / converted to CMYK / their color profile changed for a printer.
-
 ## Steps
 
-1. **Locate the input(s).** Resolve the path(s) to the uploaded file(s) or folder. If the
-   user dropped files into the chat, use the local paths provided by the host.
+1. **Resolve the inputs.** Get the path(s) to the uploaded file(s) or folder. If the user
+   dropped files into the chat, use the local paths the host provides.
 
-2. **Verify the engine is installed.** Run `command -v magick`. If missing, tell the user to
-   install it once with `brew install imagemagick`, then stop. Do not attempt a naive
-   conversion without ImageMagick — it would not be color-managed.
+2. **Check the engine.** Run `command -v magick`. If missing, tell the user to run
+   `brew install imagemagick` once, then stop. Do not attempt an unmanaged conversion —
+   it would not be color-managed, and the output would be wrong in a way that is hard to see.
 
-3. **Run the converter.** Execute the bundled script:
+3. **Convert.**
    ```bash
    bash "${CLAUDE_PLUGIN_ROOT}/scripts/rgb2cmyk.sh" <input-path(s)> -o <output-dir>
    ```
-   - Default the output dir to a `cmyk-out` folder next to the input (or the user's chosen location).
-   - The script auto-discovers a SWOP profile; if none is installed it falls back to the
-     macOS Generic CMYK profile and prints a warning.
-   - To force a specific profile: add `-p /path/to/USWebCoatedSWOP.icc`. The user can also set
-     `export SWOP_PROFILE=/path/to/USWebCoatedSWOP.icc` once to make it the default.
+   Default the output directory to `cmyk-out` beside the input unless the user names one.
+   Add `-r` to recurse, `-q N` to set JPEG quality, `-p <file.icc>` to force a profile.
 
-4. **Report results plainly.** State which files converted, where they were written, and what
-   each became (e.g. "logo.png → logo.tif, because PNG cannot hold CMYK"). Surface any
-   SKIPPED files (vector/RAW) and the reason.
+4. **Report what happened.** State which files converted, where they were written, and what
+   each became — including the format change and its reason, e.g. "logo.png → logo.tif,
+   because PNG cannot hold CMYK". List every SKIPPED file with its reason.
 
-5. **Flag the profile honestly.** If the script warned that it used Generic CMYK instead of
-   true SWOP, tell the user — output is approximate, not press-accurate. Point them to
-   `references/swop-profile.md` for how to install the real profile.
+5. **Be honest about the profile.** If the script warned that it fell back to Generic CMYK,
+   say so plainly: the output is approximate, not press-accurate. Point the user at
+   `references/swop-profile.md`.
 
-## Format behavior (set expectations before running)
+6. **Set expectations on color.** If the user is surprised that colors look duller, explain
+   that out-of-gamut RGB cannot be reproduced in print. This is physics, not a defect.
 
-| Input | Output | Note |
-|-------|--------|------|
-| JPEG  | CMYK JPEG | lossy |
-| TIFF  | CMYK TIFF | best for print |
-| PNG / BMP / GIF / WebP | CMYK **TIFF** | these formats cannot store CMYK |
-| SVG / AI / EPS / PDF | skipped | vector — needs a vector/prepress pipeline |
-| RAW (CR2/NEF/ARW/DNG…) | skipped | develop to TIFF first |
+## Before converting
 
-Never claim a PNG was "converted to a CMYK PNG" — there is no such thing. It becomes a CMYK TIFF.
+Tell the user what will happen to formats that cannot hold CMYK, so a `.tif` coming back
+is not a surprise. The full table is in
+[`references/format-behavior.md`](references/format-behavior.md).
 
 ## Reference
 
-- `references/swop-profile.md` — where to get the real US Web Coated (SWOP) profile and how to install it.
+- [`references/format-behavior.md`](references/format-behavior.md) — format routing, bit-depth handling, exit codes
+- [`references/swop-profile.md`](references/swop-profile.md) — obtaining and installing the real SWOP profile

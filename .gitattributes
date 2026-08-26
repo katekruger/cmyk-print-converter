@@ -1,0 +1,7 @@
+* text=auto eol=lf
+
+*.icc  binary
+*.plugin binary
+*.png  binary
+*.jpg  binary
+*.tif  binary
