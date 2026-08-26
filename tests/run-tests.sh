@@ -96,6 +96,42 @@ eq "--help emits no source code" \
    "$(bash "$SCRIPT" --help 2>&1 | grep -c 'set -euo pipefail')" "0"
 
 echo
+echo "== profile-absent behaviour (the default state on a fresh install) =="
+# No SWOP profile installed: must still convert, but warn loudly and namefully.
+warn=$(SWOP_PROFILE="" bash "$SCRIPT" "$IN/logo.png" -o "$WORK/nowarn" 2>&1)
+case "$warn" in
+  *"GENERIC CMYK"*) ok "generic fallback warns the user" ;;
+  *) no "generic fallback warns the user" "a GENERIC CMYK warning" "no warning emitted" ;;
+esac
+case "$warn" in
+  *USWebCoatedSWOP.icc*) ok "warning names the profile to install" ;;
+  *) no "warning names the profile to install" "USWebCoatedSWOP.icc mentioned" "not mentioned" ;;
+esac
+eq "still converts without the profile" "$([ -f "$WORK/nowarn/logo.tif" ] && echo y || echo n)" "y"
+
+# Profile explicitly named but missing: must fail with an actionable message, not a stack trace.
+err=$(bash "$SCRIPT" "$IN/logo.png" -o "$WORK/err" -p /nonexistent/Missing.icc 2>&1 || true)
+case "$err" in
+  *"CMYK profile not found"*/nonexistent/Missing.icc*) ok "missing profile names the path it looked for" ;;
+  *) no "missing profile names the path it looked for" "error naming /nonexistent/Missing.icc" "$err" ;;
+esac
+
+echo
+echo "== documented options all exist in the script =="
+# Flags appear in a case statement as alternations (-o|--out), so match the token
+# followed by either "|" or ")" rather than assuming it terminates the pattern.
+for flag in -o --out -p --profile -q --quality -r --recursive -h --help; do
+  n=$(grep -cE "^[[:space:]]*(-[a-z]\|)?${flag}[|)]" "$SCRIPT" || true)
+  [ "$n" -ge 1 ] && ok "script implements $flag" || no "script implements $flag" ">=1 case branch" "$n"
+done
+
+# And the reverse: every flag the README documents is one the script accepts.
+for flag in --out --profile --quality --recursive --help; do
+  n=$(grep -c -- "\`$flag\`" README.md || true)
+  [ "$n" -ge 1 ] && ok "README documents $flag" || no "README documents $flag" ">=1 mention" "$n"
+done
+
+echo
 echo "== build script =="
 bash "$REPO_ROOT/scripts/build-plugin.sh" -o "$WORK/b.plugin" >/dev/null 2>&1
 eq "build produces a bundle" "$([ -s "$WORK/b.plugin" ] && echo y || echo n)" "y"
