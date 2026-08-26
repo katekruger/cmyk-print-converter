@@ -61,6 +61,9 @@ jobs:
       - name: Versions agree across all declared files
         run: bash scripts/check-versions.sh
 
+      - name: Committed bundle matches source
+        run: bash scripts/build-plugin.sh --check
+
   test:
     name: Tests
     runs-on: ubuntu-latest
@@ -73,19 +76,20 @@ jobs:
       - name: Run the suite
         run: bash tests/run-tests.sh
 
-  build:
-    name: Build the plugin bundle
+  bundle:
+    name: Bundle freshness
     runs-on: ubuntu-latest
-    needs: [validate]
     steps:
       - uses: actions/checkout@v5
-      - name: Build
-        run: bash scripts/build-plugin.sh -o dist/cmyk-print-converter.plugin
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cmyk-print-converter-plugin
-          path: dist/cmyk-print-converter.plugin
-          if-no-files-found: error
+      - name: Rebuild from source and diff against the committed bundle
+        run: bash scripts/build-plugin.sh --check
+      - name: The committed bundle installs
+        run: |
+          unzip -qo cmyk-print-converter.plugin -d /tmp/bundle
+          test -f /tmp/bundle/.claude-plugin/plugin.json
+          test -f /tmp/bundle/skills/convert-to-cmyk/SKILL.md
+          test -x /tmp/bundle/scripts/rgb2cmyk.sh
+          echo "bundle contents verified"
 
   secrets:
     name: Secret scan
