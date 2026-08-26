@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Manifests and shell syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Every JSON file parses
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sys
+          bad = 0
+          for f in pathlib.Path('.').rglob('*.json'):
+              if '.git' in f.parts or 'dist' in f.parts:
+                  continue
+              try:
+                  json.loads(f.read_text())
+                  print(f"  ok   {f}")
+              except Exception as e:
+                  print(f"  FAIL {f}: {e}"); bad += 1
+          sys.exit(1 if bad else 0)
+          PY
+
+      - name: Validate plugin and marketplace manifests
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude plugin validate . --strict
+          claude plugin validate .claude-plugin/marketplace.json --strict
+
+      - name: Shell syntax
+        run: |
+          for f in scripts/*.sh tests/*.sh; do
+            echo "  bash -n $f"; bash -n "$f"
+          done
+
+      - name: Shell lint
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          shellcheck -S warning scripts/*.sh tests/*.sh
+
+      - name: Executable bits are set
+        run: |
+          fail=0
+          for f in scripts/rgb2cmyk.sh scripts/build-plugin.sh tests/run-tests.sh; do
+            mode=$(git ls-files -s "$f" | awk '{print $1}')
+            [ "$mode" = "100755" ] && echo "  ok   $f ($mode)" || { echo "  FAIL $f is $mode, expected 100755"; fail=1; }
+          done
+          exit $fail
+
+      - name: Versions agree across all declared files
+        run: bash scripts/check-versions.sh
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install ImageMagick
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick
+
+      - name: Run the suite
+        run: bash tests/run-tests.sh
+
+  build:
+    name: Build the plugin bundle
+    runs-on: ubuntu-latest
+    needs: [validate]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build
+        run: bash scripts/build-plugin.sh -o dist/cmyk-print-converter.plugin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cmyk-print-converter-plugin
+          path: dist/cmyk-print-converter.plugin
+          if-no-files-found: error
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

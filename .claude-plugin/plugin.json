@@ -10,5 +10,14 @@
   "homepage": "https://github.com/katekruger/rgbtocmykplugin",
   "repository": "https://github.com/katekruger/rgbtocmykplugin",
   "license": "MIT",
-  "keywords": ["cmyk", "rgb", "print", "color-profile", "icc", "prepress", "imagemagick", "claude-plugin"]
+  "keywords": [
+    "cmyk",
+    "rgb",
+    "print",
+    "color-profile",
+    "icc",
+    "prepress",
+    "imagemagick",
+    "claude-plugin"
+  ]
 }
