@@ -42,5 +42,5 @@ labels: bug
 
 **Before filing**
 
-- [ ] I checked the [format behavior table](https://github.com/katekruger/rgbtocmykplugin/blob/main/skills/convert-to-cmyk/references/format-behavior.md) — a PNG coming back as a `.tif` is expected
+- [ ] I checked the [format behavior table](https://github.com/katekruger/cmyk-print-converter/blob/main/skills/convert-to-cmyk/references/format-behavior.md) — a PNG coming back as a `.tif` is expected
 - [ ] I read the "Color accuracy" section of the README — duller print colors are expected

@@ -3,8 +3,8 @@
 ## Setup
 
 ```bash
-git clone https://github.com/katekruger/rgbtocmykplugin.git
-cd rgbtocmykplugin
+git clone https://github.com/katekruger/cmyk-print-converter.git
+cd cmyk-print-converter
 brew install imagemagick        # the only dependency
 bash scripts/rgb2cmyk.sh --help
 ```

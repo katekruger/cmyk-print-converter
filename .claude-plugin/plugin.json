@@ -7,8 +7,8 @@
     "name": "Kate Kruger",
     "url": "https://github.com/katekruger"
   },
-  "homepage": "https://github.com/katekruger/rgbtocmykplugin",
-  "repository": "https://github.com/katekruger/rgbtocmykplugin",
+  "homepage": "https://github.com/katekruger/cmyk-print-converter",
+  "repository": "https://github.com/katekruger/cmyk-print-converter",
   "license": "MIT",
   "keywords": [
     "cmyk",

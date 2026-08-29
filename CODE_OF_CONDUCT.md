@@ -44,7 +44,7 @@ individual is officially representing the community in public spaces.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the
-maintainer via [GitHub private vulnerability reporting](https://github.com/katekruger/rgbtocmykplugin/security/advisories/new)
+maintainer via [GitHub private vulnerability reporting](https://github.com/katekruger/cmyk-print-converter/security/advisories/new)
 or by opening a confidential discussion with [@katekruger](https://github.com/katekruger).
 
 All complaints will be reviewed and investigated promptly and fairly. All community leaders

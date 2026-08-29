@@ -11,7 +11,7 @@ The latest release on `main` is the only supported version.
 ## Reporting a vulnerability
 
 Report privately through GitHub's
-[private vulnerability reporting](https://github.com/katekruger/rgbtocmykplugin/security/advisories/new)
+[private vulnerability reporting](https://github.com/katekruger/cmyk-print-converter/security/advisories/new)
 — do not open a public issue for a security problem.
 
 Expect an acknowledgement within **7 days** and an assessment within **30 days**.

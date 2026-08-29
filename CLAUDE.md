@@ -9,9 +9,8 @@ print-ready CMYK through a real ICC profile. The repo root **is** the plugin: th
 at `.claude-plugin/plugin.json` and skills at `skills/`, so it installs directly from the
 GitHub URL.
 
-Repo name is `rgbtocmykplugin`; plugin name is `cmyk-print-converter`. Both are correct in
-their own context — use the repo name in URLs and clone commands, the plugin name in install
-commands and skill namespacing. Do not rename either.
+The repo and the plugin share one name: `cmyk-print-converter`. Use it verbatim in URLs,
+clone commands, install commands, and skill namespacing. Do not rename it.
 
 ## Layout
 

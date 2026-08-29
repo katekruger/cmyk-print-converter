@@ -2,7 +2,7 @@
 
 **A Claude Code plugin that turns RGB images into print-ready CMYK — from chat.**
 
-[![CI](https://github.com/katekruger/rgbtocmykplugin/actions/workflows/ci.yml/badge.svg)](https://github.com/katekruger/rgbtocmykplugin/actions/workflows/ci.yml)
+[![CI](https://github.com/katekruger/cmyk-print-converter/actions/workflows/ci.yml/badge.svg)](https://github.com/katekruger/cmyk-print-converter/actions/workflows/ci.yml)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey.svg)
 ![Requires](https://img.shields.io/badge/requires-ImageMagick-orange.svg)
@@ -42,24 +42,24 @@ a raster tool: vector and prepress work needs a different pipeline. See
 **As a Claude Code plugin, via the marketplace:**
 
 ```
-/plugin marketplace add katekruger/rgbtocmykplugin
+/plugin marketplace add katekruger/cmyk-print-converter
 /plugin install cmyk-print-converter
 ```
 
 **Locally, from a clone:**
 
 ```bash
-git clone https://github.com/katekruger/rgbtocmykplugin.git
-cd rgbtocmykplugin
+git clone https://github.com/katekruger/cmyk-print-converter.git
+cd cmyk-print-converter
 claude plugin install .
 ```
 
 **From the packaged bundle** — this repo ships both the packaged plugin and the source it was
 built from. Download `cmyk-print-converter.plugin` from the repo root or from
-[Releases](https://github.com/katekruger/rgbtocmykplugin/releases) and open it:
+[Releases](https://github.com/katekruger/cmyk-print-converter/releases) and open it:
 
 ```bash
-curl -L -O https://raw.githubusercontent.com/katekruger/rgbtocmykplugin/main/cmyk-print-converter.plugin
+curl -L -O https://raw.githubusercontent.com/katekruger/cmyk-print-converter/main/cmyk-print-converter.plugin
 ```
 
 The bundle and the source are kept in lockstep by CI, which rebuilds the bundle on every push

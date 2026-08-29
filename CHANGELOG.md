@@ -8,7 +8,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 - `.claude-plugin/marketplace.json` — the plugin now installs via
-  `/plugin marketplace add katekruger/rgbtocmykplugin`, which was previously impossible
+  `/plugin marketplace add katekruger/cmyk-print-converter`, which was previously impossible
 - Test suite (`tests/run-tests.sh`), 43 assertions. The repo previously had none
 - CI: manifest validation (`claude plugin validate --strict`), JSON parsing, shellcheck,
   executable-bit checks, the test suite against a real ImageMagick, bundle build, and a
