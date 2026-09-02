@@ -188,6 +188,12 @@ See [docs/development.md](docs/development.md). Agent-facing conventions are in
 Issues and pull requests welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) and the
 [Code of Conduct](CODE_OF_CONDUCT.md). Security reports: [SECURITY.md](SECURITY.md).
 
+## See also
+
+Every project here shares one idea: a GTM system should refuse to act on data it cannot verify.
+
+[descript-studio](https://github.com/katekruger/descript-studio) — the other tool here aimed at production work rather than revenue systems. Plain-language video editing with the same one-plan-then-autonomy shape.
+
 ## License
 
 [MIT](LICENSE) © Kate Kruger.
